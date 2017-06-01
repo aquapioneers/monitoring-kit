@@ -28,7 +28,7 @@ void configureTimer5(uint16_t periodMS) {
 		// TC5->COUNT16.CC[0].reg = (uint16_t) 187; //0.5us = 240 clock cycle at 48MHz (core clock)
 													// 4ms = 187 clock cycle at 46875
 		while(TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY);
-		
+
 		// Configure interrupt request
 		NVIC_DisableIRQ(TC5_IRQn);
 		NVIC_ClearPendingIRQ(TC5_IRQn);
@@ -38,7 +38,7 @@ void configureTimer5(uint16_t periodMS) {
 		// Enable the TC5 interrupt request
 		TC5->COUNT16.INTENSET.bit.MC0 = 1;
 		while(TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY);
-		
+
 		//enable the counter (from now your getting interrupt)
 		TC5->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;
 		while(TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY);
@@ -88,7 +88,7 @@ void SckBase::setup() {
 	// SAM <<>> ESP comunication
 	BUS_in.begin(details(msgIn), &Serial1);
 	BUS_out.begin(details(msgOut), &Serial1);
-	
+
 	// ESP Configuration
 	pinMode(POWER_WIFI, OUTPUT);
 	pinMode(CH_PD, OUTPUT);
@@ -211,7 +211,7 @@ void SckBase::setup() {
   	pinMode(PS, OUTPUT);
   	digitalWrite(PS, HIGH);
   	writeCurrent(200);
-	
+
  	// Button
  	pinMode(PIN_BUTTON, INPUT_PULLUP);
 	attachInterrupt(PIN_BUTTON, ISR_button, CHANGE);
@@ -267,7 +267,7 @@ void SckBase::setup() {
 		// Enable urban board sensors if it has been found
 		} else if (urbanPresent && sensors[wichSensor].location == BOARD_URBAN) {
 			sensors[wichSensor].enabled 	= true;
-			sensors[wichSensor].interval 	= configuration.readInterval;			
+			sensors[wichSensor].interval 	= configuration.readInterval;
 		}
 	}
 
@@ -321,7 +321,7 @@ void SckBase::update() {
 				if (readLightEnabled) {
 					lightResults = readLight.read();
 					if (lightResults.ok) {
-						
+
 						if (lightResults.lines[0].endsWith(F("wifi")) || lightResults.lines[0].endsWith(F("auth"))) {
 							if (lightResults.lines[1].length() > 0) {
 								lightResults.lines[1].toCharArray(credentials.ssid, 64);
@@ -376,7 +376,7 @@ void SckBase::sendNetwork() {
 }
 
 void SckBase::clearNetworks() {
-	
+
 	sckOut(F("Clearing networks..."));
 	msgBuff.com = ESP_CLEAR_WIFI_COM;
 	ESPqueueMsg(false, true);
@@ -423,7 +423,7 @@ void SckBase::changeMode(SCKmodes newMode) {
 
 			// Start ESP and ap mode
 			if (digitalRead(POWER_WIFI)) timerSet(ACTION_ESP_ON, 100);
-			
+
 			// Restart lightread for receiving new data
 			readLightEnabled = true;
 			readLight.reset();
@@ -627,7 +627,7 @@ void SckBase::ESPbusUpdate() {
 					BUS_queue[i-1].waitAnswer = BUS_queue[i].waitAnswer;
 				}
 			}
-		
+
 			// Update queue index
 			BUS_queueCount--;
 		}
@@ -688,7 +688,8 @@ void SckBase::ESPprocessMsg() {
 				sckOut(String F("Added network: ") + tssid + F(" - ") + tpass);
 				prompt();
 			} else {
-				sckOut(F("Failed to add network!!!"));
+				sckOut(F("Failed to add network!!! make sure that you have used the"));
+				sckOut(F("format set wifi \"name\" \"password\"  "));
 			}
 			break;
 
@@ -706,7 +707,7 @@ void SckBase::ESPprocessMsg() {
 			if (tssid.equals("none")) {
 				sckOut(F("No network configured!!"));
 			} else {
-				sckOut(String(number+1) + F(": ") + tssid + F(" - ") + tpass);	
+				sckOut(String(number+1) + F(": ") + tssid + F(" - ") + tpass);
 			}
 			prompt();
 			break;
@@ -746,9 +747,9 @@ void SckBase::ESPprocessMsg() {
 
 			StaticJsonBuffer<240> jsonBuffer;
 			JsonObject& jsonConf = jsonBuffer.parseObject(msgIn.param);
-			
+
 			setReadInterval(jsonConf["ri"]);
-			
+
 			saveConf();
 			sckOut(F("Configuration updated:"));
 			sckOut(String F("Reading interval: ") + String(configuration.readInterval));
@@ -814,7 +815,7 @@ void SckBase::ESPprocessMsg() {
 			led.configOK();
 		 	readLightEnabled = false;
 		 	readLight.reset();
-		 	
+
 		 	//MQTT Hellow for Onboarding process
 			triggerHello = true;
 			break;
@@ -893,8 +894,8 @@ void SckBase::processStatus() {
 				onWifi = false;
 				break;
 
-			} 
-		} 
+			}
+		}
 
 		// If there was ANY wifi error...
 		if (!onWifi) {
@@ -969,12 +970,12 @@ void SckBase::processStatus() {
 
 				sckOut(F("NTP sync ERROR!!"));
 				if (mode != MODE_AP) {
-					if (!onTime) led.update(mode, 1);	
+					if (!onTime) led.update(mode, 1);
 				}
 				break;
 
 			} case ESP_TIME_UPDATED_EVENT: {
-				
+
 				// Time sync
 				sckOut(F("Asking time to ESP..."));
 				msgBuff.com = ESP_GET_TIME_COM;
@@ -1021,7 +1022,7 @@ void SckBase::processStatus() {
 			sckOut(F("Configuration on ESP has changed!!!"), PRIO_LOW);
 			msgBuff.com = ESP_GET_CONF_COM;
 			ESPqueueMsg(false, false);
-			
+
 		}
 	}
 
@@ -1140,7 +1141,7 @@ void SckBase::sckIn(String strIn) {
 				espSerialDebug = false;
 				ESPqueueMsg(false);
 			} else {
-				sckOut(F("Please start ESP first!"));	
+				sckOut(F("Please start ESP first!"));
 			}
 			break;
 
@@ -1196,7 +1197,7 @@ void SckBase::sckIn(String strIn) {
 				sendToken();
 			}
 			break;
-		
+
 		} case EXTCOM_GET_TOKEN: {
 			msgBuff.com = ESP_GET_TOKEN_COM;
 			ESPqueueMsg(false, true);
@@ -1226,7 +1227,7 @@ void SckBase::sckIn(String strIn) {
 
 		} case EXTCOM_SET_CONFIG: {
 
-			// TODO poner los params en el help			
+			// TODO poner los params en el help
 			if (strIn.startsWith("readint")) {
 				strIn.replace("readint", "");
 				strIn.trim();
@@ -1384,15 +1385,15 @@ void SckBase::sckIn(String strIn) {
 
 			// Failed to found your sensor
 			if (wichSensor < SENSOR_COUNT) {
-				
+
 				// Get reading
 				if (getReading(wichSensor)) {
-					
+
 					OneSensor *thisSensor = &sensors[wichSensor];
 					sckOut(thisSensor->title + ": " + String(thisSensor->reading) + " " + thisSensor->unit);
-				
+
 				} else {
-					
+
 					// Exception for Networks readings because it is async... it will output when its finished.
 					if (wichSensor == SENSOR_NETWORKS) break;
 
@@ -1529,7 +1530,7 @@ void SckBase::sckIn(String strIn) {
 			SensorType wichSensor = getSensorFromString(strIn);
 
 			if (wichSensor < SENSOR_COUNT) {
-			
+
 				if (strIn.length() < 1) {
 					sckOut(F("No command received!! please try again..."));
 					break;
@@ -1541,7 +1542,7 @@ void SckBase::sckIn(String strIn) {
 					String titleCompare = sensors[wichSensor].title;
 					titleCompare.toLowerCase();
 					strIn = cleanInput(titleCompare, strIn);
-					
+
 					// Print sensor title
 					sckOut(sensors[wichSensor].title + ": " + strIn);
 
@@ -1553,7 +1554,7 @@ void SckBase::sckIn(String strIn) {
 						} case BOARD_AUX: {
 							sckOut(auxBoards.control(wichSensor, strIn));
 							break;
-							
+
 						}
 					}
 
@@ -1620,7 +1621,7 @@ SensorType SckBase::getSensorFromString(String strIn) {
 /* Text outputs
  *
  *	@params strOut 		Text output
- 	@params priority	Level of priority of the message: 
+ 	@params priority	Level of priority of the message:
  							PRIO_LOW - only showed in OUT_VERBOSE
  							PRIO_MED (default) - showed in VERBOSE and OUT_NORMAL
 							PRIO_HIGH - showed in all modes (even in OUT_SILENT)
@@ -1673,12 +1674,12 @@ bool SckBase::setTime(String epoch) {
 String SckBase::ISOtime() {
 	// Return string.format("%04d-%02d-%02dT%02d:%02d:%02dZ", tm["year"], tm["mon"], tm["day"], tm["hour"], tm["min"], tm["sec"])
 	if (onTime) {
-		String isoTime = "20" + 
-		leadingZeros(String(rtc.getYear()), 2) + "-" + 
-		leadingZeros(String(rtc.getMonth()), 2) + "-" + 
-		leadingZeros(String(rtc.getDay()), 2) + "T" +  
-		leadingZeros(String(rtc.getHours()), 2) + ":" + 
-		leadingZeros(String(rtc.getMinutes()), 2) + ":" + 
+		String isoTime = "20" +
+		leadingZeros(String(rtc.getYear()), 2) + "-" +
+		leadingZeros(String(rtc.getMonth()), 2) + "-" +
+		leadingZeros(String(rtc.getDay()), 2) + "T" +
+		leadingZeros(String(rtc.getHours()), 2) + ":" +
+		leadingZeros(String(rtc.getMinutes()), 2) + ":" +
 		leadingZeros(String(rtc.getSeconds()), 2) + "Z";
 		return isoTime;
 	} else {
@@ -1691,14 +1692,14 @@ String SckBase::epoch2iso(uint32_t toConvert) {
 	time_t tc = toConvert;
     struct tm* tmp = gmtime(&tc);
 
-	String isoTime = "20" + 
+	String isoTime = "20" +
 	leadingZeros(String(tmp->tm_year - 100), 2) + "-" +
-	leadingZeros(String(tmp->tm_mon + 1), 2) + "-" + 
+	leadingZeros(String(tmp->tm_mon + 1), 2) + "-" +
 	leadingZeros(String(tmp->tm_mday), 2) + "T" +
-	leadingZeros(String(tmp->tm_hour), 2) + ":" + 
-	leadingZeros(String(tmp->tm_min), 2) + ":" + 
+	leadingZeros(String(tmp->tm_hour), 2) + ":" +
+	leadingZeros(String(tmp->tm_min), 2) + ":" +
 	leadingZeros(String(tmp->tm_sec), 2) + "Z";
-	
+
 	return isoTime;
 }
 
@@ -1722,11 +1723,11 @@ void SckBase::publish() {
 
 			getReading(wichSensor);
 
-			if (wichSensor == SENSOR_TIME) 
+			if (wichSensor == SENSOR_TIME)
 				sckOut(sensors[wichSensor].title + ": " + epoch2iso(sensors[wichSensor].lastReadingTime) + " " + sensors[wichSensor].unit, PRIO_HIGH);
-			else if (wichSensor == SENSOR_NETWORKS) 
+			else if (wichSensor == SENSOR_NETWORKS)
 				sckOut(sensors[wichSensor].title + ": " + String(sensors[wichSensor].reading) + " " + sensors[wichSensor].unit, PRIO_HIGH);
-			else 
+			else
 				sckOut(sensors[wichSensor].title + ": " + String(sensors[wichSensor].reading) + " " + sensors[wichSensor].unit, PRIO_HIGH);
 
 		} else {
@@ -1735,13 +1736,13 @@ void SckBase::publish() {
 	}
 	sckOut("--------------------------");
 	sckOut("");
-	
+
 	// Turn on led
 	led.brightnessFactor = 1;
 	led.dim = false;
 
 	if (mode == MODE_NET) {
-		
+
 		// If we are connected publish or wait for conection
 		if (onWifi) ESPpublish();
 		else ESPpublishPending = true;
@@ -1749,7 +1750,7 @@ void SckBase::publish() {
 		StartedPublishTime = millis();
 
 	} else if (mode == MODE_SD) {
-		
+
 		bool platformPublishedOK = false;
 		publishToSD(platformPublishedOK);
 
@@ -1806,7 +1807,7 @@ bool SckBase::readingFinished() {
 	for (uint8_t i=0; i<SENSOR_COUNT; i++) {
 
 		SensorType wichSensor = static_cast<SensorType>(i);
-		
+
 		// If sensor IS enabled check if reading is finished
 		if (sensors[wichSensor].enabled) {
 			if (!sensors[wichSensor].valid) return false;
@@ -1838,12 +1839,12 @@ void SckBase::ESPpublish() {
 	for (uint8_t i=0; i<SENSOR_COUNT; i++) {
 
 		SensorType wichSensor = static_cast<SensorType>(i);
-		
+
 		// Only send enabled sensors
 		if (sensors[wichSensor].enabled) {
 
 			// exception for time (send ISO time)
-			if (wichSensor == SENSOR_TIME) { 
+			if (wichSensor == SENSOR_TIME) {
 				jsonSensors[String(i)] = sensors[wichSensor].lastReadingTime;
 			} else {
 				jsonSensors[String(i)] = double_with_n_digits(sensors[wichSensor].reading, 2);
@@ -1865,13 +1866,13 @@ bool SckBase::publishToSD(bool platformPublishedOK) {
 	sckOut(F("Publishing to SDcard..."));
 
 	if (openPublishFile()) {
-		
+
 		// Write down the platform publish status of this reading
 		if (platformPublishedOK) publishFile.print("1,");
 		else publishFile.print("0,");
 
 		for (uint8_t i=0; i<SENSOR_COUNT; i++) {
-			
+
 			SensorType wichSensor = static_cast<SensorType>(i);
 
 			// Only print data if sensors is enabled, otherwise print only the ,
@@ -1882,9 +1883,9 @@ bool SckBase::publishToSD(bool platformPublishedOK) {
 					// Time need a special treatment
 					publishFile.print(epoch2iso(sensors[wichSensor].lastReadingTime));
 				}
-				
+
 				else if (wichSensor == SENSOR_NETWORKS || wichSensor == SENSOR_BATTERY) {
-				
+
 					// This sensors needs rounding
 					publishFile.print((int)sensors[wichSensor].reading);
 
@@ -1896,7 +1897,7 @@ bool SckBase::publishToSD(bool platformPublishedOK) {
 				}
 
 				if (wichSensor < SENSOR_COUNT) publishFile.print(",");
-			} 
+			}
 
 
 		}
@@ -1991,8 +1992,8 @@ void SckBase::buttonEvent() {
 
 		butIsDown = false;
 		if (mode == MODE_NET || mode == MODE_SD) led.dim = true;
-		butLastEvent = millis();		
-		
+		butLastEvent = millis();
+
 		timerClear(ACTION_LONG_PRESS);
 		timerClear(ACTION_VERY_LONG_PRESS);
 
@@ -2035,7 +2036,7 @@ void SckBase::buttonDown() {
 }
 
 void SckBase::buttonUp() {
-	
+
 	sckOut(F("Button up"), PRIO_MED);
 }
 
@@ -2125,7 +2126,7 @@ bool SckBase::openPublishFile() {
 
 						// Write headers
 						if (writeHeader) {
-							
+
 							// Published OK flag
 							publishFile.print(F("Published,"));
 
@@ -2135,13 +2136,13 @@ bool SckBase::openPublishFile() {
 								if (sensors[wichSensor].enabled) {
 									// Sensor titles
 									publishFile.print(sensors[wichSensor].title);
-									
+
 									// If there are units cofigured
 									if (sensors[wichSensor].unit.length() > 0) {
 										publishFile.print("-");
-										publishFile.print(sensors[wichSensor].unit);	
+										publishFile.print(sensors[wichSensor].unit);
 									}
-									if (wichSensor < SENSOR_COUNT) publishFile.print(",");	
+									if (wichSensor < SENSOR_COUNT) publishFile.print(",");
 								}
 							}
 							publishFile.println("");
@@ -2154,7 +2155,7 @@ bool SckBase::openPublishFile() {
 
 				// If file dont open or too big try next
 				publishFileName = String F("POST") + leadingZeros(String(fi), 3) + F(".CSV");
-				
+
 			}
 		}
 	}
@@ -2164,7 +2165,7 @@ bool SckBase::openPublishFile() {
 
 bool SckBase::openLogFile() {
 
-	// Turn off ESP since it don't play well with SDcard right now 
+	// Turn off ESP since it don't play well with SDcard right now
 	ESPcontrol(ESP_OFF);
 
 	char charLogFileName[logFileName.length()];
@@ -2175,7 +2176,7 @@ bool SckBase::openLogFile() {
 
 		// Open file
 		logFile = sd.open(charLogFileName, FILE_WRITE);
-			
+
 		if (logFile) {
 			// If file is already on size limit
 			if (logFile.size() > FileSizeLimit) {
@@ -2396,8 +2397,8 @@ bool SckBase::USBConnected() {
   * Detect urban board by changing Audio amplifier resistor value (I2C) and check if it responds OK.
   */
 bool SckBase::urbanBoardDetected() {
-	
-	// Test if digital POT responds 
+
+	// Test if digital POT responds
 	float originalValue = readResistor(6);
 	writeResistor(6, 1200.0);
 	float compareValue = readResistor(6);
@@ -2422,7 +2423,7 @@ void Led::setup() {
 
 /* Call this every time there is an event that changes SCK mode
  *
- */ 
+ */
 void Led::update(SCKmodes newMode, uint8_t newPulseMode) {
 
 	switch (newPulseMode) {
@@ -2471,7 +2472,7 @@ void Led::update(SCKmodes newMode, uint8_t newPulseMode) {
 			ledRGBcolor = offRGB;
 			pulseMode = PULSE_STATIC;
 			break;
-		} 
+		}
 	}
 
 	if (pulseMode != PULSE_STATIC) configureTimer5(refreshPeriod);
@@ -2504,7 +2505,7 @@ void Led::bridge() {
 void Led::tick() {
 
 	if(pulseMode == PULSE_SOFT) {
-		
+
 		ledRGBcolor = *(currentPulse + colorIndex);
 
 		if (dir) {
@@ -2531,7 +2532,7 @@ void Led::tick() {
 		ledRGBcolor.r = ledRGBcolor.r * brightnessFactor;
 		ledRGBcolor.g = ledRGBcolor.g * brightnessFactor;
 		ledRGBcolor.b = ledRGBcolor.b * brightnessFactor;
-	
+
 
 	} else if (pulseMode == PULSE_HARD_SLOW) {
 
@@ -2569,7 +2570,7 @@ void Led::setRGBColor(RGBcolor myColor) {
 		pinMode(PIN_LED_RED, OUTPUT);
 		digitalWrite(PIN_LED_RED, HIGH);
 	} else analogWrite(PIN_LED_RED, 255 - myColor.r);
-	
+
 	if (myColor.g == 0) {
 		pinMode(PIN_LED_GREEN, OUTPUT);
 		digitalWrite(PIN_LED_GREEN, HIGH);
@@ -2613,14 +2614,14 @@ void Led::setHSIColor(float h, float s, float i) {
 
 void Led::off() {
 	disableTimer5();
-	
+
 	ledRGBcolor = offRGB;
 	pulseMode = PULSE_STATIC;
 
 	pinMode(PIN_LED_RED, OUTPUT);
 	pinMode(PIN_LED_GREEN, OUTPUT);
 	pinMode(PIN_LED_BLUE, OUTPUT);
-	
+
 	digitalWrite(PIN_LED_RED, HIGH);
 	digitalWrite(PIN_LED_GREEN, HIGH);
 	digitalWrite(PIN_LED_BLUE, HIGH);
@@ -2636,7 +2637,7 @@ bool SckBase::timerRun() {
 	for (uint8_t i=0; i<timerSlots; i++) {
 		if (timers[i].action != ACTION_NULL) {
 			if (millis() - timers[i].started > timers[i].interval) {
-				
+
 				// Check for action to execute
 				switch(timers[i].action) {
 					case ACTION_CLEAR_ESP_BOOTING:{
@@ -2655,7 +2656,7 @@ bool SckBase::timerRun() {
 					} case ACTION_GET_ESP_STATUS: {
 						if (!digitalRead(POWER_WIFI)) getStatus();
 						break;
-					
+
 					} case ACTION_LONG_PRESS: {
 						longPress();
 						break;
@@ -2683,11 +2684,11 @@ bool SckBase::timerRun() {
 								SensorType wichSensor = static_cast<SensorType>(i);
 
 								if (sensors[wichSensor].enabled) {
-									if (wichSensor == SENSOR_TIME) 
+									if (wichSensor == SENSOR_TIME)
 										sckOut(sensors[wichSensor].title + ": " + epoch2iso(sensors[wichSensor].lastReadingTime) + " " + sensors[wichSensor].unit, PRIO_HIGH);
-									else if (wichSensor == SENSOR_NETWORKS) 
+									else if (wichSensor == SENSOR_NETWORKS)
 										sckOut(sensors[wichSensor].title + ": " + String(sensors[wichSensor].reading) + " " + sensors[wichSensor].unit, PRIO_HIGH);
-									else 
+									else
 										sckOut(sensors[wichSensor].title + ": " + String(sensors[wichSensor].reading) + " " + sensors[wichSensor].unit, PRIO_HIGH);
 								}
 							}
@@ -2716,13 +2717,18 @@ bool SckBase::timerRun() {
 						sdLogADC();
 						break;
 
-					} //case ACTION_WATCHDOG_RESET: {
+					} case ACTION_ALERT_POWER_SHORTAGE:{
+						// in case of power shortage
+						if( getCharger() < 1000){  };
+						break;
+					}
+					//case ACTION_WATCHDOG_RESET: {
 
 					// 	sckOut(F("Watchdog reset triggered!!!"));
 					// 	// Only reset kit in Setup and net modes
 					// 	if (mode == MODE_NET || mode == MODE_AP) softReset();
 					// 	break;
-					// } 
+					// }
 				}
 
 				// Clear Timer
@@ -2875,9 +2881,9 @@ byte SckBase::readI2C(int deviceaddress, byte address ) {
   Wire.requestFrom(deviceaddress,1);
   unsigned long time = millis();
   while (!Wire.available()) if ((millis() - time)>500) return 0x00;
-  data = Wire.read(); 
+  data = Wire.read();
   return data;
-}  
+}
 
 
 /* 	-------------------------
@@ -2892,10 +2898,10 @@ String leadingZeros(String original, int decimalNumber) {
 }
 
 uint8_t countMatchedWords(String baseString, String input) {
-	
+
 	uint8_t foundedCount = 0;
 	String word;
-	
+
 	while (input.length() > 0) {
 
 		// Get next word
@@ -2936,7 +2942,7 @@ String cleanInput(String toRemove, String original) {
 
 		if (toRemove.indexOf(wordNoSpaces) > -1) original.replace(word, "");
 		else finished = true;
-			
+
 		checking.replace(word, "");
 	}
 	return original;
@@ -2959,7 +2965,7 @@ BUGS
 *** MODECHANGE ORGANIZATION
 -- Hacer una funcion que borre TODOS los timers
 -- Organizar y unificar los cambios cuando pasas de un modo a otro
--- HAY que revisar bien el flow de errores en NET y SD MODE 
+-- HAY que revisar bien el flow de errores en NET y SD MODE
 
 *** SDCARD ISSUES
 -- En sdcard mode no inicia el serial
@@ -2985,7 +2991,7 @@ BUGS LEVES
 -- get best wifi via serial dont return anything
 -- cuando hago un publish o get readings aparece el numero de nets antes del output (en la consola)
 -- a veces el webserver necesita un reload para mostrar la lista de apps
--- al ejecutar un ESP_OFF el led del esp se queda con algo de corriente (parece ser por iniciar la sdcard) 
+-- al ejecutar un ESP_OFF el led del esp se queda con algo de corriente (parece ser por iniciar la sdcard)
 -- aunque esten deshabilitados los MICS siguen usando el preheater, habria que ejecutar micsOn y micsOff cuando mics.enabled cambie.
 -- a veces cuando el esp no se puede conectar el kit se queda en un loop, hay que checar si postea en sd. creo que no apaga el ESP y eso previene el guardado en sd. me imagino que no hay feedback por parte del esp... podria poner un timeout. Todo tiene que ver con el usb!! hay que ver el detach
 -- poner un limite de publish no exitosos para reiniciar el sck
@@ -3035,7 +3041,7 @@ Short things todo
   [x] -- envio de token a esp (easytransfer)
   [x] -- get wifi from ESP (easytrasfer)
   [x] -- get token from ESP (easyTranfer)
-  [x] -- get APscan from ESP 
+  [x] -- get APscan from ESP
   [x] -- get time from esp,
   [x] -- Implementar un timer en base a lastimeSync para ajustar el reloj a traves de la red cuando tenemos wifi.
   [x] -- Cambiar el espbooting con un timeout depsues de iniciar el esp
@@ -3064,7 +3070,7 @@ Short things todo
   [x] -- recibir el time por luz
   [x] -- recibir el time por USB
   [x] -- recibir el time por webServer
-  [ ] -- Get time from smartcitizen HTTP 
+  [ ] -- Get time from smartcitizen HTTP
   [ ] -- Integrate Timelibrary to SAM code
 
 ** BUTTON
@@ -3167,7 +3173,7 @@ Short things todo
   [ ] -- the same but via web server
   [ ] -- Create a file in the sdcard with the list of supported devices where you can enable them.
   [ ] -- enable auxiliary devices via MQTT
-  [x] -- Crear el dispositivo Auxiliar AlphasenseDelta con todos los sensores internos y demas. 
+  [x] -- Crear el dispositivo Auxiliar AlphasenseDelta con todos los sensores internos y demas.
   [ ] -- Implementar el manejo del EPPROM de AlphaDelta
   [ ] -- Buscar la manera de tener un GPS como auxiliar
   [ ] -- Crear dispositivos para los diferentes devices de seeed studio
@@ -3178,12 +3184,12 @@ Short things todo
   [x] -- Responder al SAM con la red que se guardo como confirmacion
   [x] -- Si hay otra red con el mismo SSID sobreescribirla con la nueva HAY que encontrar una manera mas sencilla!!!!!
   [x] -- Poner un maximo de redes, e ir borrando la ultima cuando se agreguen nuevas
-  [x] -- Implementar la funcion selectBestNetwork(), 
+  [x] -- Implementar la funcion selectBestNetwork(),
   [x] -- Enviar todas las redes configuradas al SAM
   [x] -- Borrar todas las redes
   [x] -- Al iniciar intenta conectarse y si falla pasar a modo ap
-  			primero intentamos conectarnos a la ultima red de la lista, 
-  			si no funciona hacemos un barrido y despues de conectarnos exitosamente a una, 
+  			primero intentamos conectarnos a la ultima red de la lista,
+  			si no funciona hacemos un barrido y despues de conectarnos exitosamente a una,
   			la movemos al final de la lista para evitar escaneos las proximas veces
   [x] -- AP mode
   [x] -- Json con la lista de ap escaneados entregado por el webserver

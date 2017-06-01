@@ -127,7 +127,7 @@ public:
 	// Hard pulses
 	uint16_t slowHard = 300;
 	uint16_t fastHard = 80;
-	uint32_t hardTimer; 
+	uint32_t hardTimer;
 
 	pulseModes pulseMode = PULSE_SOFT;
 	uint32_t timerReading;   //substituir esto por una libreria de timers
@@ -151,26 +151,27 @@ private:
  */
 class SckBase {
 public:
-   
+
 	void setup();
 	void update();
 
 	// Timer
 	bool timerRun();
-	enum TimerAction { 
-		ACTION_NULL, 
+	enum TimerAction {
+		ACTION_NULL,
 		ACTION_CLEAR_ESP_BOOTING,
 		ACTION_ESP_ON,
 		ACTION_ESP_REBOOT,
-		ACTION_GET_ESP_STATUS, 
+		ACTION_GET_ESP_STATUS,
 		ACTION_LONG_PRESS,
-		ACTION_VERY_LONG_PRESS, 
+		ACTION_VERY_LONG_PRESS,
 		ACTION_FACTORY_RESET,
 		ACTION_READING_FINISHED,
 		ACTION_PUBLISH,
 		ACTION_CHECK_ESP_PUBLISH_TIMEOUT,
 		ACTION_READ_NETWORKS,
 		ACTION_DEBUG_LOG,
+		ACTION_ALERT_POWER_SHORTAGE,
 		// ACTION_WATCHDOG_RESET
 	};
 	struct OneTimer	{
@@ -282,7 +283,7 @@ public:
 		EXTCOM_RESET_CAUSE,
 		EXTCOM_GET_MODE,
 		EXTCOM_SET_MODE,			// @params: net, shell, sdcard, bridge, flash, sleep, off
-		
+
 		// Other configuration
 		EXTCOM_SET_OUTLEVEL,
 		EXTCOM_GET_OUTLEVEL,
@@ -436,7 +437,7 @@ public:
 	// Peripherals
 	Led led;
 	RTCZero rtc;
-	
+
 	// Urban board
 	friend class SckUrban;
 	bool urbanBoardDetected();

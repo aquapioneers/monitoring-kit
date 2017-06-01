@@ -4,6 +4,7 @@ AlphaDelta		alphaDelta;
 GrooveI2C_ADC	grooveI2C_ADC;
 INA219			ina219;
 Groove_OLED		groove_OLED;
+DS2482 ds(0);
 
 void AuxBoards::setup() {
 
@@ -15,7 +16,7 @@ void AuxBoards::setup() {
 }
 
 float AuxBoards::getReading(SensorType wichSensor) {
-	
+
 	switch (wichSensor) {
 		case SENSOR_ALPHADELTA_AE1: 		return alphaDelta.getElectrode(alphaDelta.AE_1); break;
 		case SENSOR_ALPHADELTA_WE1: 		return alphaDelta.getElectrode(alphaDelta.WE_1); break;
@@ -54,7 +55,7 @@ String AuxBoards::control(SensorType wichSensor, String command) {
 					case SENSOR_ALPHADELTA_AE3: wichPot = alphaDelta.POT_AE3;
 					case SENSOR_ALPHADELTA_WE3: wichPot = alphaDelta.POT_WE3;
 				}
-				
+
 				command.replace("set pot", "");
 				command.trim();
 				int wichValue = command.toInt();
@@ -69,7 +70,7 @@ String AuxBoards::control(SensorType wichSensor, String command) {
 				return F("Unrecognized command!! please try again...");
 
 			}
-			
+
 			break;
 		}
 	}
@@ -87,7 +88,7 @@ MCP3424 adc_Slot_1_2(0x68);
 MCP3424 adc_Slot_3(0x69);
 
 bool AlphaDelta::begin() {
-	
+
 	if (!sht31.begin(0x44)) return false;
 
 	// TODO poner un checkeo para saber si respondieron los adc y si no retornar false
@@ -143,7 +144,7 @@ void AlphaDelta::setPot(Resistor wichPot, uint32_t value) {
 	int data=0x00;
 	if (value>100000) value = 100000;
 	data = (int)(value/ohmsPerStep);
-	
+
 	Wire.beginTransmission(wichPot.deviceAddress);
 	Wire.write(wichPot.resistorAddress);
 	Wire.write(data);
@@ -159,7 +160,7 @@ uint32_t AlphaDelta::getPot(Resistor wichPot) {
   Wire.write(wichPot.resistorAddress);
   Wire.endTransmission();
   Wire.requestFrom(wichPot.deviceAddress,1);
-  
+
   // Wait for answer with a timeout
   uint16_t waitTimeout = 500;
   uint32_t time = millis();
@@ -305,4 +306,51 @@ void Groove_OLED::displayReading(String title, String reading, String unit, Stri
 		U8g2_oled.drawStr(96-U8g2_oled.getStrWidth(Chour),96,Chour);
 
 	} while (U8g2_oled.nextPage());
+}
+bool DS2482_100::begin() {
+
+		Wire.begin();
+		ds.reset();
+		//if (!ds.configure(DS2482_CONFIG_APU)) SckBase.sckOut(F("DS2482 not found"));
+		ds.wireReset();
+		ds.wireSkip();
+		return true;
+}
+
+float DS2482_100::getReading() {
+		int LowByte;
+		int HighByte;
+		int TReading;
+		int SignBit;
+		float Tc_100;
+
+		//test if device code DS18b20
+		if (addr[0]==0x28) {
+			ds.wireReset();
+  		ds.selectChannel(0); //necessary on -800
+  		ds.wireSelect(addr);
+  		ds.wireWriteByte(0xbe);         // Read Scratchpad command
+
+			//reading
+			for ( int i = 0; i < 9; i++)  data[i] = ds.wireReadByte(); // we need 9 bytes
+
+			//convert to decimal temperature
+
+		  LowByte = data[0];
+		  HighByte = data[1];
+		  TReading = (HighByte << 8) + LowByte;
+		  SignBit = TReading & 0x8000;  // test most sig bit
+		  if (SignBit) // negative
+		  {
+		    TReading = (TReading ^ 0xffff) + 1; // 2's comp
+		  }
+
+		  Tc_100 = (double)TReading * 0.0625 * 10;
+
+		  if (SignBit) // If its negative
+		  {
+		     Tc_100=0-Tc_100;
+		  }
+		}
+		return Tc_100;
 }

@@ -58,7 +58,7 @@ enum SensorType {
 	// Actuators (This is temp)
 	SENSOR_GROOVE_OLED,
 
-	SENSOR_COUNT	
+	SENSOR_COUNT
 };
 
 class OneSensor {
@@ -93,12 +93,12 @@ public:
 
 class AllSensors {
 public:
-	
+
 	OneSensor list[SENSOR_COUNT] {
-	
-		//			SensorLocation 		SensorType 							title 								id			controllable	unit 		
-						
-		// Base Sensors						
+
+		//			SensorLocation 		SensorType 							title 								id			controllable	unit
+
+		// Base Sensors
 		OneSensor {	BOARD_BASE, 		SENSOR_TIME, 						"Time",									0,			false,			},
 		OneSensor {	BOARD_BASE, 		SENSOR_BATTERY, 					"Battery", 								10,			false,			"%"},
 		OneSensor {	BOARD_BASE, 		SENSOR_VOLTIN,						"Input voltage", 						0,			false,			"mV"},
@@ -146,11 +146,11 @@ public:
 
 		// Later this will be moved to a Actuators.h file
 		// Groove I2C Oled Display 96x96
-		OneSensor { BOARD_AUX,			SENSOR_GROOVE_OLED,					"Groove OLED",							0,			false,			}
+		OneSensor { BOARD_AUX,			SENSOR_GROOVE_OLED,					"Groove OLED",							0,			false,			},
 
 		//-----------------------
 		// Add New Sensor Here!!!
-
+		OneSensor { BOARD_AUX,			SENSOR_DS18B20_DS2482, 			"ds18b20",										0,		true, 			"°C"}
 	};
 
 	OneSensor & operator[](SensorType type) {
@@ -158,5 +158,5 @@ public:
 	}
 
 private:
-	
+
 };
