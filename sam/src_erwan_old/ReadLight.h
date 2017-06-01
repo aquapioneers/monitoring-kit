@@ -35,7 +35,7 @@ private:
 	// Variables to manage light values (just for calibration)
   	float newValue = 0;
   	float oldValue = 0;
-		
+
 	// Variables to manage levels (each level represents an octal char)
 	uint8_t levelNum = 9;				// Number of different grey levels the sensor can read (the screen should use the same number)
 	uint16_t levels[9];					// Array for saving the sensor reading for each level during calibration
