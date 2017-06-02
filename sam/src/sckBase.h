@@ -1,5 +1,7 @@
 #pragma once
-
+#undef max
+#undef min
+#include <vector>
 #include <Arduino.h>
 #include <RTCZero.h>
 #include <time.h>
@@ -172,6 +174,7 @@ public:
 		ACTION_READ_NETWORKS,
 		ACTION_DEBUG_LOG,
 		ACTION_ALERT_POWER_SHORTAGE,
+		ACTION_DISPLAY_ALL_SENSORS,
 		// ACTION_WATCHDOG_RESET
 	};
 	struct OneTimer	{
@@ -313,6 +316,7 @@ public:
 		// Print String to u8g2_oled screen
 		EXTCOM_U8G_PRINT,			// @params: String to be printed
 		EXTCOM_U8G_PRINT_SENSOR,	// @params: Sensor to be printed
+		EXTCOM_U8G_PRINT_ALL,
 
 		// Other
 		EXTCOM_GET_CHAN0,
@@ -447,6 +451,23 @@ public:
 	void goToSleep(bool wakeToCheck = true);
 	void wakeUp();
 
+	//display timer
+
+	/**
+	 * get the number of sensors that you can display on the u8g
+	 * @param createList if true function will create an array of the displayable sensors
+	 * @return totalOfDisplayable the number of sensors displayable
+	 */
+	uint8_t getSensorsDisplayable(bool createList);
+	/**
+	 * begin to display sensors values on the lcd screen
+	 */
+	void startDisplayAll();
+	uint8_t numberOfSensorDisplayed;
+	uint8_t numberOfDisplayable;
+	std::vector<SensorType> listOfDisplayable ;
+	uint32_t const DISPLAY_ALL_INTERVAL = 5000; /*!< intervall between each switch of
+	 sensor displayed */
 private:
 };
 

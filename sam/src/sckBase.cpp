@@ -182,6 +182,7 @@ void SckBase::setup() {
 	// U8g_OLED commands
 	comTitles[EXTCOM_U8G_PRINT]			=	"u8g print";				// @params: String to be printed
 	comTitles[EXTCOM_U8G_PRINT_SENSOR]	=	"u8g sensor";				// @params: Sensor to be printed
+	comTitles[EXTCOM_U8G_PRINT_ALL] = "display all";
 
 	// Other
 	comTitles[EXTCOM_GET_CHAN0]			=	"get chann0";
@@ -292,6 +293,7 @@ void SckBase::setup() {
 
 	// For debugging purposes only (comment for production)
 	// timerSet(ACTION_DEBUG_LOG, 5000, true);
+	 startDisplayAll();
 };
 
 void SckBase::update() {
@@ -1372,7 +1374,7 @@ void SckBase::sckIn(String strIn) {
 
 		// SD card
 		} case EXTCOM_SD_PRESENT: {
-			if (sdPresent()) sckOut(F("Sdcard ready!!!"));
+				if (sdPresent()) sckOut(F("Sdcard ready!!!"));
 			break;
 
 		} case EXTCOM_GET_SENSOR: {
@@ -1414,7 +1416,7 @@ void SckBase::sckIn(String strIn) {
 			sckOut(String F("charger: ") + getCharger() + F(" V"), PRIO_HIGH);
 			break;
 
-		}case EXTCOM_GET_BATTVOLT: {
+		} case EXTCOM_GET_BATTVOLT: {
 			sckOut(String F("charger: ") + getBatteryVoltage() + F(" V"), PRIO_HIGH);
 			break;
 
@@ -1480,6 +1482,19 @@ void SckBase::sckIn(String strIn) {
 
 				sckOut(String F("Printing ") + Stitle);
 			}
+
+			break;
+
+		} case EXTCOM_U8G_PRINT_ALL: {
+				if(timerExists(ACTION_DISPLAY_ALL_SENSORS)){
+
+					 timerClear(ACTION_DISPLAY_ALL_SENSORS);
+					 sckOut(String F("stop displaying all sensors"));
+				 }
+				else{
+					sckOut(String F("start displaying all sensors"));
+				startDisplayAll() ;
+				}
 
 			break;
 
@@ -1590,7 +1605,11 @@ void SckBase::sckIn(String strIn) {
 		}
 	}
 }
-
+/**
+ * get sensor type from string
+ * @param  strIn name of the sensor
+ * @return type of the sensor
+ */
 SensorType SckBase::getSensorFromString(String strIn) {
 	SensorType wichSensor = SENSOR_COUNT;
 	uint8_t maxWordsFound = 0;
@@ -2719,8 +2738,31 @@ bool SckBase::timerRun() {
 
 					} case ACTION_ALERT_POWER_SHORTAGE:{
 						// in case of power shortage
-						if( getCharger() < 1000){  };
+						// to be completed !
+						if( getCharger() < 500){  };
 						break;
+					} case ACTION_DISPLAY_ALL_SENSORS:{
+							if(numberOfSensorDisplayed < numberOfDisplayable){
+
+									getReading(listOfDisplayable[numberOfSensorDisplayed]);
+
+									OneSensor *thisSensor = &sensors[listOfDisplayable[numberOfSensorDisplayed]];
+									//sckOut(String F("display : ") + listOfDisplayable[numberOfSensorDisplayed]);
+
+									//sckOut(String F("number of displayable : ") + numberOfDisplayable);
+									//sckOut(String F("OfSensorDisplayed: "+ numberOfSensorDisplayed));
+									String Stitle = thisSensor->title;
+									String Sreading = String(thisSensor->reading, 1);
+									String Sunit = thisSensor->unit;
+									auxBoards.displayReading(Stitle, Sreading, Sunit, ISOtime());
+
+									sckOut(String F("Printing ") + Stitle);
+									numberOfSensorDisplayed ++;
+							}
+							else{
+								numberOfSensorDisplayed = 0;
+							}
+							break;
 					}
 					//case ACTION_WATCHDOG_RESET: {
 
@@ -2885,7 +2927,31 @@ byte SckBase::readI2C(int deviceaddress, byte address ) {
   return data;
 }
 
+uint8_t SckBase::getSensorsDisplayable(bool createList){
+		uint8_t totalOfDisplayable =0;
+		bool isDisplayable = false;
+		listOfDisplayable.clear();
 
+	for (uint8_t i=0; i<SENSOR_COUNT; i++) {
+		SensorType thisSensor = static_cast<SensorType>(i);
+		isDisplayable = sensors[thisSensor].displayable;
+
+		if(isDisplayable){
+			 totalOfDisplayable++;
+			 if(createList) {
+				 listOfDisplayable.push_back(thisSensor);
+			 }
+		 }
+	}
+	if (totalOfDisplayable==0) sckOut(F("no sensors to display"));
+	return totalOfDisplayable;
+}
+
+void  SckBase::startDisplayAll() {
+	numberOfSensorDisplayed = 0;
+	numberOfDisplayable = getSensorsDisplayable(true);
+	timerSet(ACTION_DISPLAY_ALL_SENSORS, DISPLAY_ALL_INTERVAL, true);
+}
 /* 	-------------------------
  	|	 Utility functions 	|
  	-------------------------
@@ -2947,6 +3013,7 @@ String cleanInput(String toRemove, String original) {
 	}
 	return original;
 }
+
 
 
 /*
