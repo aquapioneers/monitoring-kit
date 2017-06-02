@@ -55,10 +55,12 @@ enum SensorType {
 	SENSOR_INA219_CURRENT,
 	SENSOR_INA219_LOADVOLT,
 
+	SENSOR_DS18B20_DS2482,
+
 	// Actuators (This is temp)
 	SENSOR_GROOVE_OLED,
 
-	SENSOR_COUNT	
+	SENSOR_COUNT
 };
 
 class OneSensor {
@@ -74,9 +76,10 @@ public:
 	bool controllable;
 	SensorLocation location;
 	uint8_t id;
+	bool displayable; /*!< @brief for u8g display timer*/
 
 
-	OneSensor(SensorLocation nLocation, SensorType nType, String nTitle, uint8_t nId=0, bool nControllable=false, String nUnit="") {
+	OneSensor(SensorLocation nLocation, SensorType nType, String nTitle, uint8_t nId=0, bool nControllable=false, String nUnit="", bool nDisplayable=false) {
 		type = nType;
 		title = nTitle;
 		unit = nUnit;
@@ -88,17 +91,18 @@ public:
 		controllable = nControllable;
 		location = nLocation;
 		id = nId;
+		displayable = nDisplayable;
 	}
 };
 
 class AllSensors {
 public:
-	
+
 	OneSensor list[SENSOR_COUNT] {
-	
-		//			SensorLocation 		SensorType 							title 								id			controllable	unit 		
-						
-		// Base Sensors						
+
+		//			SensorLocation 		SensorType 							title 								id			controllable	unit displayable
+
+		// Base Sensors
 		OneSensor {	BOARD_BASE, 		SENSOR_TIME, 						"Time",									0,			false,			},
 		OneSensor {	BOARD_BASE, 		SENSOR_BATTERY, 					"Battery", 								10,			false,			"%"},
 		OneSensor {	BOARD_BASE, 		SENSOR_VOLTIN,						"Input voltage", 						0,			false,			"mV"},
@@ -108,9 +112,9 @@ public:
 
 		// Urban Sensors
 		OneSensor {	BOARD_URBAN, 		SENSOR_NOISE, 						"Noise", 								29,			false,			"dBc"},
-		OneSensor {	BOARD_URBAN, 		SENSOR_HUMIDITY,					"Humidity", 							13,			false,			"%"},
-		OneSensor {	BOARD_URBAN, 		SENSOR_TEMPERATURE, 				"Temperature", 							12,			false,			"C"},
-		OneSensor {	BOARD_URBAN, 		SENSOR_LIGHT, 						"Light", 								14,			false,			"Lux"},
+		OneSensor {	BOARD_URBAN, 		SENSOR_HUMIDITY,					"Humidity", 							13,			false,			"%", true},
+		OneSensor {	BOARD_URBAN, 		SENSOR_TEMPERATURE, 				"Temperature", 							12,			false,			"C", true},
+		OneSensor {	BOARD_URBAN, 		SENSOR_LIGHT, 						"Light", 								14,			false,			"Lux", true},
 		OneSensor {	BOARD_URBAN, 		SENSOR_CO, 							"Carbon monoxide", 						16,			true,			"kOhm/ppm"},
 		OneSensor {	BOARD_URBAN, 		SENSOR_CO_HEAT_TIME, 				"Carbon monoxide heat time",			0,			false,			"sec"},
 		OneSensor {	BOARD_URBAN, 		SENSOR_CO_HEAT_CURRENT, 			"Carbon monoxide heat current",			0,			false,			"mA"},
@@ -146,11 +150,11 @@ public:
 
 		// Later this will be moved to a Actuators.h file
 		// Groove I2C Oled Display 96x96
-		OneSensor { BOARD_AUX,			SENSOR_GROOVE_OLED,					"Groove OLED",							0,			false,			}
+		OneSensor { BOARD_AUX,			SENSOR_GROOVE_OLED,					"Groove OLED",							0,			false,			},
 
 		//-----------------------
 		// Add New Sensor Here!!!
-
+		OneSensor { BOARD_AUX,			SENSOR_DS18B20_DS2482, 			"ds18b20",										0,		false, 			"°C"}
 	};
 
 	OneSensor & operator[](SensorType type) {
@@ -158,5 +162,5 @@ public:
 	}
 
 private:
-	
+
 };

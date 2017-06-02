@@ -2,3 +2,8 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
+src_erwan_old
+.tags
+.tags1
+**/doc/**
+**/html/**

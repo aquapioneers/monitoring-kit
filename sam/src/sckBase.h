@@ -1,5 +1,7 @@
 #pragma once
-
+#undef max
+#undef min
+#include <vector>
 #include <Arduino.h>
 #include <RTCZero.h>
 #include <time.h>
@@ -127,7 +129,7 @@ public:
 	// Hard pulses
 	uint16_t slowHard = 300;
 	uint16_t fastHard = 80;
-	uint32_t hardTimer; 
+	uint32_t hardTimer;
 
 	pulseModes pulseMode = PULSE_SOFT;
 	uint32_t timerReading;   //substituir esto por una libreria de timers
@@ -151,26 +153,28 @@ private:
  */
 class SckBase {
 public:
-   
+
 	void setup();
 	void update();
 
 	// Timer
 	bool timerRun();
-	enum TimerAction { 
-		ACTION_NULL, 
+	enum TimerAction {
+		ACTION_NULL,
 		ACTION_CLEAR_ESP_BOOTING,
 		ACTION_ESP_ON,
 		ACTION_ESP_REBOOT,
-		ACTION_GET_ESP_STATUS, 
+		ACTION_GET_ESP_STATUS,
 		ACTION_LONG_PRESS,
-		ACTION_VERY_LONG_PRESS, 
+		ACTION_VERY_LONG_PRESS,
 		ACTION_FACTORY_RESET,
 		ACTION_READING_FINISHED,
 		ACTION_PUBLISH,
 		ACTION_CHECK_ESP_PUBLISH_TIMEOUT,
 		ACTION_READ_NETWORKS,
 		ACTION_DEBUG_LOG,
+		ACTION_ALERT_POWER_SHORTAGE,
+		ACTION_DISPLAY_ALL_SENSORS,
 		// ACTION_WATCHDOG_RESET
 	};
 	struct OneTimer	{
@@ -282,7 +286,7 @@ public:
 		EXTCOM_RESET_CAUSE,
 		EXTCOM_GET_MODE,
 		EXTCOM_SET_MODE,			// @params: net, shell, sdcard, bridge, flash, sleep, off
-		
+
 		// Other configuration
 		EXTCOM_SET_OUTLEVEL,
 		EXTCOM_GET_OUTLEVEL,
@@ -312,6 +316,7 @@ public:
 		// Print String to u8g2_oled screen
 		EXTCOM_U8G_PRINT,			// @params: String to be printed
 		EXTCOM_U8G_PRINT_SENSOR,	// @params: Sensor to be printed
+		EXTCOM_U8G_PRINT_ALL,
 
 		// Other
 		EXTCOM_GET_CHAN0,
@@ -436,7 +441,7 @@ public:
 	// Peripherals
 	Led led;
 	RTCZero rtc;
-	
+
 	// Urban board
 	friend class SckUrban;
 	bool urbanBoardDetected();
@@ -446,6 +451,23 @@ public:
 	void goToSleep(bool wakeToCheck = true);
 	void wakeUp();
 
+	//display timer
+
+	/**
+	 * get the number of sensors that you can display on the u8g
+	 * @param createList if true function will create an array of the displayable sensors
+	 * @return totalOfDisplayable the number of sensors displayable
+	 */
+	uint8_t getSensorsDisplayable(bool createList);
+	/**
+	 * begin to display sensors values on the lcd screen
+	 */
+	void startDisplayAll();
+	uint8_t numberOfSensorDisplayed;
+	uint8_t numberOfDisplayable;
+	std::vector<SensorType> listOfDisplayable ;
+	uint32_t const DISPLAY_ALL_INTERVAL = 5000; /*!< intervall between each switch of
+	 sensor displayed */
 private:
 };
 

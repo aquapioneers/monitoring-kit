@@ -15,6 +15,7 @@
 #include <U8g2lib.h>
 
 #include <Sensors.h>
+#include <DS2482.h>
 
 
 struct Resistor {
@@ -37,9 +38,9 @@ private:
 class AlphaDelta {
 public:
 
-	
+
 	bool begin();
-	
+
 	// SHT31 Temperature and Humidity Sensor
 	Adafruit_SHT31 sht31 = Adafruit_SHT31();
 	float getTemperature();
@@ -102,8 +103,41 @@ public:
 	U8G2_SSD1327_SEEED_96X96_F_HW_I2C U8g2_oled = U8G2_SSD1327_SEEED_96X96_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE, SCL, SDA);
 
 	bool begin();
+	/**
+	 * print a string to the LCD sreen
+	 * @param payload string to be written
+	 */
 	void print(String payload);
+	/**
+	 * method to display the reading of a sensor
+	 * @param title   name of the sensor
+	 * @param reading the value to display
+	 * @param unit    the unit in which is the value
+	 * @param time    the time to display
+	 */
 	void displayReading(String title, String reading, String unit, String time);
 
+private:
+};
+/*! @class DS2482_100
+ *  @brief class for handleling the DS18B20 temperature sensor connected to the I2C port
+ *   through the DS2482-100 board. This was based on an example made by
+ *   <a href="https://github.com/paeaetech/paeae.git">paeae</a>
+ */
+class DS2482_100 {
+	//
+public:
+	byte data[8]; /*!< holding for onewire capture */
+	byte addr[8]; /*!<  1wire wire address and CRC */
+	/**
+	 * start the transmission of data for the DS18B20 threw the DS2482_100
+	 * @return true
+	 */
+	bool begin();
+	/**
+	 * Read the temperature of the DS18B20 threw the DS2482_100
+	 * @return Tc_100 the temperature read by the DS18B20
+	 */
+	float getReading();
 private:
 };
