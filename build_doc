@@ -5,6 +5,6 @@ echo "building doxygen documentation"
 cd $BASEDIR
 doxygen Doxyfile
 echo "moving doc from /docs/html to /docs"
-mv ./docs/html/* ./docs
+mv ./docs/html/{,.[^.]}* ./docs
 echo "removing html folder"
 rm -d ./docs/html
