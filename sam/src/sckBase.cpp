@@ -2741,9 +2741,8 @@ bool SckBase::timerRun() {
 						// to be completed !
 						if( getCharger() < 500){  };
 						break;
-					} case ACTION_DISPLAY_ALL_SENSORS:{
+					} case ACTION_DISPLAY_ALL_SENSORS: {
 							if(numberOfSensorDisplayed < numberOfDisplayable){
-
 									getReading(listOfDisplayable[numberOfSensorDisplayed]);
 
 									OneSensor *thisSensor = &sensors[listOfDisplayable[numberOfSensorDisplayed]];
@@ -2929,14 +2928,13 @@ byte SckBase::readI2C(int deviceaddress, byte address ) {
 
 uint8_t SckBase::getSensorsDisplayable(bool createList){
 		uint8_t totalOfDisplayable =0;
-		bool isDisplayable = false;
 		listOfDisplayable.clear();
+
 
 	for (uint8_t i=0; i<SENSOR_COUNT; i++) {
 		SensorType thisSensor = static_cast<SensorType>(i);
-		isDisplayable = sensors[thisSensor].displayable;
 
-		if(isDisplayable){
+		if(sensors[thisSensor].displayable && sensors[thisSensor].enabled){
 			 totalOfDisplayable++;
 			 if(createList) {
 				 listOfDisplayable.push_back(thisSensor);

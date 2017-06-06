@@ -96,7 +96,10 @@ public:
 
 private:
 };
-
+/**
+ *@class GrooveI2C_ADC
+ *@brief class for handling a I2C LCD screen
+*/
 class Groove_OLED {
 public:
 
@@ -116,11 +119,10 @@ public:
 	 * @param time    the time to display
 	 */
 	void displayReading(String title, String reading, String unit, String time);
-
 private:
 };
 /*! @class DS2482_100
- *  @brief class for handleling the DS18B20 temperature sensor connected to the I2C port
+ *  @brief class for handling the DS18B20 temperature sensor connected to the I2C port
  *   through the DS2482-100 board. This was based on an example made by
  *   <a href="https://github.com/paeaetech/paeae.git">paeae</a>
  */

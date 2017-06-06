@@ -259,10 +259,17 @@ void Groove_OLED::print(String payload) {
 	} while (U8g2_oled.nextPage());
 }
 
+
+
 void Groove_OLED::displayReading(String title, String reading, String unit, String time) {
+	uint8_t ll;
+	//title
+	/* ll = title.length();
+	char Ctitle[ll];
+	title.toCharArray(Ctitle, ll+1);*/
 
 	// Reading
-	uint8_t ll = reading.length();
+	ll = reading.length();
 	char Creading[ll];
 	reading.toCharArray(Creading, ll+1);
 
@@ -279,7 +286,7 @@ void Groove_OLED::displayReading(String title, String reading, String unit, Stri
 	SerialUSB.println(Cdate);
 
 	// Time
-	String hours = time.substring(11,19);
+	String hours = time.substring(11,16);
 	char Chour[9];
 	hours.toCharArray(Chour, 9);
 
@@ -287,26 +294,35 @@ void Groove_OLED::displayReading(String title, String reading, String unit, Stri
 
 	U8g2_oled.firstPage();
 	do {
+		/*U8g2_oled.setFont(u8g2_font_helvB10_tf);
+		U8g2_oled.drawStr(0,11, Ctitle);*/
+
 		// Reading Left aligned
 		U8g2_oled.setFont(u8g2_font_helvB24_tf);
-		U8g2_oled.drawStr(0,40, Creading);
+		U8g2_oled.drawStr(0,51, Creading);
 
-		U8g2_oled.setFont(u8g2_font_helvB14_tf);
-		U8g2_oled.drawStr(0,62, Cunit);
+		U8g2_oled.setFont(u8g2_font_helvB12_tf);
+		U8g2_oled.drawStr(96-U8g2_oled.getStrWidth(Cunit),73, Cunit);
 
-		// Clock icon
-		U8g2_oled.setFont(u8g2_font_unifont_t_symbols);
-		U8g2_oled.drawGlyph(80, 70, 0x23f2);
+
 
 		// Date
 		U8g2_oled.setFont(u8g2_font_helvB10_tf);
-		U8g2_oled.drawStr(96-U8g2_oled.getStrWidth(Cdate),83,Cdate);
+		U8g2_oled.drawStr(0,96,Cdate);
 
+		// Clock icon
+		//U8g2_oled.setFont(u8g2_font_unifont_t_symbols);
+		//U8g2_oled.drawGlyph(96-U8g2_oled.getStrWidth(Chour)-15, 96, 0x23f2);
 		// Time
 		U8g2_oled.drawStr(96-U8g2_oled.getStrWidth(Chour),96,Chour);
 
 	} while (U8g2_oled.nextPage());
 }
+
+
+
+
+
 bool DS2482_100::begin() {
 
 		Wire.begin();

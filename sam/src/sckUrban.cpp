@@ -214,13 +214,13 @@ uint16_t SckUrban::readSHT(uint8_t type){
 			Wire.requestFrom(SHT21_I2C_DIR,3);
 			unsigned long time = millis();
 			while (!Wire.available()) if ((millis() - time)>500) return 0x00;
-			DATA = Wire.read()<<8; 
-			DATA += Wire.read(); 
+			DATA = Wire.read()<<8;
+			DATA += Wire.read();
 			Wire.read();
-			DATA &= ~0x0003; 
+			DATA &= ~0x0003;
 			return DATA;
 }
-	
+
 float SckUrban::getHumidity() {
 
 	return (-6 + (125*(readSHT(0xE5)/65536.0)));
@@ -244,9 +244,9 @@ float SckUrban::getLight() {
 	Wire.write(0x80|0x00);
 	for(int i= 0; i<8; i++) Wire.write(DATA[i]);
 	Wire.endTransmission();
-	delay(100); 
+	delay(100);
 	Wire.beginTransmission(BH1730_I2C_DIR);
-	Wire.write(0x94);  
+	Wire.write(0x94);
 	Wire.endTransmission();
 	Wire.requestFrom(BH1730_I2C_DIR, 4);
 	DATA0 = Wire.read();
@@ -254,7 +254,7 @@ float SckUrban::getLight() {
 	DATA1 = Wire.read();
 	DATA1=DATA1|(Wire.read()<<8);
 
-	uint8_t Gain = 0x00; 
+	uint8_t Gain = 0x00;
 	if (GAIN0 == 0x00) Gain = 1;
 	else if (GAIN0 == 0x01) Gain = 2;
 	else if (GAIN0 == 0x02) Gain = 64;
@@ -303,10 +303,10 @@ void SckUrban::gasSetup(SensorType wichSensor) {
 void SckUrban::gasOn(SensorType wichSensor) {
 
 	if (wichSensor == SENSOR_CO) {
-		
+
 		// Load resistor setup (minimal safe value is 820)
 		setPot(POT_CO_LOAD_RESISTOR, 100000);
-		
+
 		gasHeat(wichSensor, CO_HEATING_CURRENT);
 		// TODO do i need to correct current here???
 
@@ -314,7 +314,7 @@ void SckUrban::gasOn(SensorType wichSensor) {
 
 		// Load resistor setup (minimal safe value is 820)
 		setPot(POT_NO2_LOAD_RESISTOR, 100000);
-		
+
 		gasHeat(wichSensor, NO2_HEATING_CURRENT);
 	}
 }
@@ -347,7 +347,7 @@ void SckUrban::gasHeat(SensorType wichSensor, uint32_t wichCurrent) {
 
 		// store requested current
 		// TODO Save this current in eprom for persistence
-		CO_HEATING_CURRENT = wichCurrent;				
+		CO_HEATING_CURRENT = wichCurrent;
 
 		// Calculate required voltage for requested current
 		uint32_t calculatedRegulatorVoltage = (CO_HEATER_RESISTANCE * CO_HEATING_CURRENT) + (CO_HEATER_RESISTOR * CO_HEATING_CURRENT);
@@ -378,7 +378,7 @@ void SckUrban::gasHeat(SensorType wichSensor, uint32_t wichCurrent) {
 
 		// Start on the low side and wait for current correction
 		calculatedRegulatorVoltage -= 500;
-		
+
 		// Set voltage to functional value
 		gasSetRegulatorVoltage(wichSensor, calculatedRegulatorVoltage);
 
@@ -478,7 +478,7 @@ void SckUrban::gasCorrectHeaterCurrent(SensorType wichSensor) {
 float SckUrban::gasGetSensorResistance(SensorType wichSensor) {
 
 	float sensorVoltage = 0;
-	
+
 	if (wichSensor == SENSOR_CO) sensorVoltage = ((float)average(CO_SENSOR_VOLTAGE_PIN) * VCC) / RESOLUTION_ANALOG; 	// (mV)	Measure sensor Voltage
 	else if (wichSensor == SENSOR_NO2) sensorVoltage = ((float)average(NO2_SENSOR_VOLTAGE_PIN) * VCC) / RESOLUTION_ANALOG; 	// (mV)	Measure sensor Voltage
 
@@ -489,13 +489,13 @@ float SckUrban::gasGetSensorResistance(SensorType wichSensor) {
 }
 
 uint32_t SckUrban::gasHeatingTime(SensorType wichSensor) {
-	
+
 	if (wichSensor == SENSOR_CO && gasCOheaterState) {
 
 		return (millis() - startHeaterTime_CO) / 1000;
 
 	} else if (wichSensor == SENSOR_NO2 && gasNO2heaterState) {
-	
+
 		return (millis() - startHeaterTime_NO2) / 1000;
 
 	// If the sensors are off
@@ -545,7 +545,7 @@ float SckUrban::gasRead(SensorType wichSensor) {
 
 		} else break;
 	}
-	return sensorResistance / 1000;
+	return (float)(sensorResistance / 1000);
 }
 
 
@@ -569,7 +569,7 @@ void SckUrban::setPot(Resistor wichPot, uint32_t value) {
 	int data=0x00;
 	if (value>100000) value = 100000;
 	data = (int)(value/ohmsPerStep);
-	
+
 	Wire.beginTransmission(wichPot.deviceAddress);
 	Wire.write(wichPot.resistorAddress);
 	Wire.write(data);
@@ -602,6 +602,6 @@ float SckUrban::average(uint8_t wichPin) {
 	for(uint32_t i=0; i<numReadings; i++) {
 		total = total + analogRead(wichPin);
 	}
-	average = (float)total / numReadings;  
+	average = (float)total / numReadings;
 	return average;
 }
