@@ -154,7 +154,7 @@ public:
 
 		//-----------------------
 		// Add New Sensor Here!!!
-		OneSensor { BOARD_AUX,			SENSOR_DS18B20_DS2482, 			"ds18b20",										0,		false, 			"°C"}
+		OneSensor { BOARD_AUX,			SENSOR_DS18B20_DS2482, 			"ds18b20",										0,		true, 			"°C"}
 	};
 
 	OneSensor & operator[](SensorType type) {

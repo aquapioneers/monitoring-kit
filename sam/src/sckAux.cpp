@@ -1,11 +1,13 @@
 #include "sckAux.h"
+#include "sckBase.h"
 
 AlphaDelta		alphaDelta;
 GrooveI2C_ADC	grooveI2C_ADC;
 INA219			ina219;
 Groove_OLED		groove_OLED;
 DS2482 ds(0);
-
+DS2482_100 ds2482_100;
+SckBase sckBase;
 void AuxBoards::setup() {
 
 	// TODO enable or disable auxiliary boards based on response from init
@@ -13,6 +15,7 @@ void AuxBoards::setup() {
 	grooveI2C_ADC.begin();
 	ina219.begin();
 	groove_OLED.begin();
+	ds2482_100.begin();
 }
 
 float AuxBoards::getReading(SensorType wichSensor) {
@@ -31,6 +34,7 @@ float AuxBoards::getReading(SensorType wichSensor) {
 		case SENSOR_INA219_SHUNT: 			return ina219.getReading(ina219.SHUNT_VOLT); break;
 		case SENSOR_INA219_CURRENT: 		return ina219.getReading(ina219.CURRENT); break;
 		case SENSOR_INA219_LOADVOLT: 		return ina219.getReading(ina219.LOAD_VOLT); break;
+		case SENSOR_DS18B20_DS2482: return ds2482_100.getReading(); break;
 	}
 }
 
@@ -326,47 +330,103 @@ void Groove_OLED::displayReading(String title, String reading, String unit, Stri
 bool DS2482_100::begin() {
 
 		Wire.begin();
+		//ds.begin();
 		ds.reset();
-		//if (!ds.configure(DS2482_CONFIG_APU)) SckBase.sckOut(F("DS2482 not found"));
+		//test always fails remove by author
+		//if (!ds.configure(DS2482_CONFIG_APU)) sckBase.sckOut(F("DS2482 not found"));
 		ds.wireReset();
 		ds.wireSkip();
+		ds.wireWriteByte(0x44);
 		return true;
 }
 
 float DS2482_100::getReading() {
-		int LowByte;
-		int HighByte;
-		int TReading;
-		int SignBit;
-		float Tc_100;
+	return 10.0;
+	/*
+	//do search
+	//uint8_t search = ds.wireSearch(addr);
+	//debug
+	//SerialUSB.print("ds.wireSearch() : ");
+	//SerialUSB.println(search);
+	//SerialUSB.print("!ds.wireSearch() : ");
+	//SerialUSB.println(!search);
 
-		//test if device code DS18b20
-		if (addr[0]==0x28) {
-			ds.wireReset();
-  		ds.selectChannel(0); //necessary on -800
-  		ds.wireSelect(addr);
-  		ds.wireWriteByte(0xbe);         // Read Scratchpad command
+ while ( !ds.wireSearch(addr))
+	 {
+SerialUSB.print("No more addresses.\n");
 
-			//reading
-			for ( int i = 0; i < 9; i++)  data[i] = ds.wireReadByte(); // we need 9 bytes
+ ds.wireResetSearch();
 
-			//convert to decimal temperature
+ SerialUSB.print("LOOP : ds.wirereset(): ");
+ SerialUSB.println(ds.wireReset());
+ SerialUSB.print("ds.selectChannel(0) : ");
+ SerialUSB.println(ds.selectChannel(0)); // after reset need to set channel
+ SerialUSB.print("ds.configure(conf) : ");
+ SerialUSB.println(ds.configure(conf)); //adding this helps but does make sense.
+ ds.wireSkip();
+ ds.configure(conf); //set bus on strong pull-up after next write, not only LSB nibble is required
+ ds.wireWriteByte(0x44); //convert temperature on all devices
+ delay(1000); //wait for conversion
+ ds.configure(0x01);
 
-		  LowByte = data[0];
-		  HighByte = data[1];
-		  TReading = (HighByte << 8) + LowByte;
-		  SignBit = TReading & 0x8000;  // test most sig bit
-		  if (SignBit) // negative
-		  {
-		    TReading = (TReading ^ 0xffff) + 1; // 2's comp
-		  }
-
-		  Tc_100 = (double)TReading * 0.0625 * 10;
-
-		  if (SignBit) // If its negative
-		  {
-		     Tc_100=0-Tc_100;
-		  }
+	//return 10;
 		}
-		return Tc_100;
+
+ SerialUSB.print("ROM =");
+ for( int i = 0; i < 8; i++) {
+	SerialUSB.write(' ');
+	if (addr[i] < 16) SerialUSB.print("0");
+	 SerialUSB.print(addr[i], HEX);
+	}
+
+ if (ds.crc8(addr, 7) != addr[7]) {
+	SerialUSB.println("CRC is not valid!");
+	return 10;
+ }
+
+//test if device code DS18b20
+if (addr[0]==0x28) {
+
+//read temperature data.
+ds.wireReset(); //ds.reset();
+ds.selectChannel(0); //necessary on -800
+ds.wireSelect(addr);
+ds.wireWriteByte(0xbe);         // Read Scratchpad command
+
+//display hex values of scratchpad
+SerialUSB.print(" ");
+for ( int i = 0; i < 9; i++) {           // we need 9 bytes
+	data[i] = ds.wireReadByte();
+
+ if (data[i]<16)SerialUSB.print("0");
+ SerialUSB.print(data[i],HEX);
+
+}
+SerialUSB.print(" ");
+
+//convert to decimal temperature
+
+int LowByte = data[0];
+int HighByte = data[1];
+int TReading = (HighByte << 8) + LowByte;
+int SignBit = TReading & 0x8000;  // test most sig bit
+if (SignBit) // negative
+{
+	TReading = (TReading ^ 0xffff) + 1; // 2's comp
+}
+
+int Tc_100 = (double)TReading * 0.0625 * 10;
+
+if (SignBit) // If its negative
+{
+	 Tc_100=0-Tc_100;
+}
+
+//print temp for each device
+
+	SerialUSB.print(Tc_100/10+1);
+	SerialUSB.print(".");
+	SerialUSB.println(Tc_100%10);
+	return (float) (Tc_100/10+1+Tc_100%10);
+}*/
 }

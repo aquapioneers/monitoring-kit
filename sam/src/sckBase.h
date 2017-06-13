@@ -153,28 +153,30 @@ private:
  */
 class SckBase {
 public:
-
+	/**
+	 * setup function it is run on boot of the board
+	 */
 	void setup();
 	void update();
 
 	// Timer
 	bool timerRun();
 	enum TimerAction {
-		ACTION_NULL,
+		ACTION_NULL, ///< do nothing
 		ACTION_CLEAR_ESP_BOOTING,
 		ACTION_ESP_ON,
 		ACTION_ESP_REBOOT,
 		ACTION_GET_ESP_STATUS,
 		ACTION_LONG_PRESS,
 		ACTION_VERY_LONG_PRESS,
-		ACTION_FACTORY_RESET,
+		ACTION_FACTORY_RESET, ///< reset the monitoring kit
 		ACTION_READING_FINISHED,
-		ACTION_PUBLISH,
+		ACTION_PUBLISH, ///< publish data online if on network mode or on sd card if on sd mode
 		ACTION_CHECK_ESP_PUBLISH_TIMEOUT,
 		ACTION_READ_NETWORKS,
 		ACTION_DEBUG_LOG,
-		ACTION_ALERT_POWER_SHORTAGE,
-		ACTION_DISPLAY_ALL_SENSORS,
+		ACTION_ALERT_POWER_SHORTAGE, ///< send alert if the system has a power failure
+		ACTION_DISPLAY_ALL_SENSORS, ///< display all sensors displayable on LCD screen
 		// ACTION_WATCHDOG_RESET
 	};
 	struct OneTimer	{
@@ -185,9 +187,28 @@ public:
 	};
 	static const uint8_t timerSlots = 8;
 	OneTimer timers[timerSlots];
+	/**
+	 * set a timer
+	 * @param action     timer to set
+	 * @param interval   interval between each call
+	 * @param isPeriodic is the timer periodic
+	 */
 	void timerSet(TimerAction action, uint32_t interval, bool isPeriodic=false);		// interval is in milliseconds
+	/**
+	 * end a specific timer
+	 * @param  action timer to stop
+	 * @return  true if timer has stoped, false is timer already stoped
+	 */
 	bool timerClear(TimerAction action);
+	/**
+	 * clear all timer execpt ACTION_LONG_PRESS, ACTION_VERY_LONG_PRESS and ACTION_GET_ESP_STATUS
+	 */
 	void timerClearTasks();
+	/**
+	 * check if a timer exist
+	 * @param  action the timer to check
+	 * @return        true if the timer exist, false if not
+	 */
 	bool timerExists(TimerAction action);
 	// void restartWatchdog();
 	const uint8_t MAX_PUBLISH_FAILS_ALLOWED = 5;
@@ -249,9 +270,9 @@ public:
 	// External Commands
 	enum ExternalCommand {
 		// Esp commands
-		EXTCOM_ESP_REBOOT,
-		EXTCOM_ESP_OFF,
-		EXTCOM_ESP_ON,
+		EXTCOM_ESP_REBOOT, ///< reboot the ESP chip
+		EXTCOM_ESP_OFF, ///< turn off the ESP chip
+		EXTCOM_ESP_ON, ///< turn on the ESP chip
 		EXTCOM_ESP_START_AP,
 		EXTCOM_ESP_STOP_AP,
 		EXTCOM_ESP_START_WEB,
@@ -282,15 +303,15 @@ public:
 		EXTCOM_GET_CONFIG,
 
 		// Mode commands
-		EXTCOM_RESET,
+		EXTCOM_RESET, ///< reset the kit
 		EXTCOM_RESET_CAUSE,
 		EXTCOM_GET_MODE,
-		EXTCOM_SET_MODE,			// @params: net, shell, sdcard, bridge, flash, sleep, off
+		EXTCOM_SET_MODE,			///< @params: net, shell, sdcard, bridge, flash, sleep, off
 
 		// Other configuration
 		EXTCOM_SET_OUTLEVEL,
 		EXTCOM_GET_OUTLEVEL,
-		EXTCOM_SET_LED,				// @params: off, (to implement: red, blue, green, etc)
+		EXTCOM_SET_LED,				///< @params: off, (to implement: red, blue, green, etc)
 		EXTCOM_GET_URBAN_PRESENT,
 		EXTCOM_READLIGHT_ON,
 		EXTCOM_READLIGHT_OFF,
@@ -298,8 +319,8 @@ public:
 		EXTCOM_READLIGHT_TOGGLE_DEBUG,
 
 		// Time configuration
-		EXTCOM_GET_TIME,			// @params: iso (default), epoch
-		EXTCOM_SET_TIME,			// @params: epoch time
+		EXTCOM_GET_TIME,			///< @params: iso (default), epoch
+		EXTCOM_SET_TIME,			///< @params: epoch time
 		EXTCOM_SYNC_HTTP_TIME,
 
 		// SD card
@@ -314,8 +335,8 @@ public:
 		EXTCOM_CONTROL_SENSOR,
 
 		// Print String to u8g2_oled screen
-		EXTCOM_U8G_PRINT,			// @params: String to be printed
-		EXTCOM_U8G_PRINT_SENSOR,	// @params: Sensor to be printed
+		EXTCOM_U8G_PRINT,			///< @params: String to be printed
+		EXTCOM_U8G_PRINT_SENSOR,	///< @params: Sensor to be printed
 		EXTCOM_U8G_PRINT_ALL,
 
 		// Other
@@ -419,6 +440,10 @@ public:
 	uint16_t readADC(byte channel);
 	bool isCharging = false;
 	const uint16_t batTable[100] = {3078,3364,3468,3540,3600,3641,3682,3701,3710,3716,3716,3716,3720,3714,3720,3725,3732,3742,3739,3744,3744,3754,3760,3762,3770,3768,3774,3774,3774,3779,3784,3790,3788,3794,3798,3798,3804,3809,3809,3812,3817,3817,3822,3823,3828,3828,3828,3833,3838,3838,3842,3847,3852,3859,3858,3864,3862,3869,3877,3877,3883,3888,3894,3898,3902,3906,3912,3923,3926,3936,3942,3946,3960,3972,3979,3982,3991,3997,4002,4002,4012,4018,4028,4043,4057,4074,4084,4094,4098,4098,4109,4115,4123,4134,4142,4153,4158,4170,4180,4188 };
+	/**
+	 * check if usb cable is connected
+	 * @return true if usc connected
+	 */
 	bool USBConnected();
 
 
@@ -463,9 +488,9 @@ public:
 	 * begin to display sensors values on the lcd screen
 	 */
 	void startDisplayAll();
-	uint8_t numberOfSensorDisplayed;
-	uint8_t numberOfDisplayable;
-	std::vector<SensorType> listOfDisplayable ;
+	uint8_t numberOfSensorDisplayed; ///< number of sensors already displayed
+	uint8_t numberOfDisplayable; ///< number of sensors displayable
+	std::vector<SensorType> listOfDisplayable ; ///< list of the sensors to display
 	uint32_t const DISPLAY_ALL_INTERVAL = 5000; /*!< intervall between each switch of
 	 sensor displayed */
 private:

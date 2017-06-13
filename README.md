@@ -1,5 +1,5 @@
-Monitoring Kit
-=================
+Monitoring Kit {#mainpage}   
+==============
 
 **Introduction**
 The aquaponics monitoring kit is based on Smart citizen Kit. 

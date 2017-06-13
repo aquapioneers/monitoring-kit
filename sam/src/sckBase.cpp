@@ -1,5 +1,6 @@
 #include "sckBase.h"
 
+
 // Hardware Timers
 bool timer5Up = false;
 void configureTimer5(uint16_t periodMS) {
@@ -293,7 +294,8 @@ void SckBase::setup() {
 
 	// For debugging purposes only (comment for production)
 	// timerSet(ACTION_DEBUG_LOG, 5000, true);
-	 startDisplayAll();
+
+	//startDisplayAll();
 };
 
 void SckBase::update() {
@@ -517,13 +519,25 @@ void SckBase::inputUpdate() {
 		if (SerialUSB.available()) {
 			char buff = SerialUSB.read();
 			serialBuff += buff;
-			sckOut((String)buff, PRIO_MED, false);			// Shell echo
-			if (buff == 13 || buff == 10) { 				// New line detected
-				sckOut("");
-				sckIn(serialBuff);							// Process input
-				serialBuff = "";
-				prompt();
+			//sckOut((String)buff, PRIO_MED, false);			// Shell echo
+			switch( buff) {
+				case 10 :
+				case 13 : { 			/// case 10 / 13 \n enter : use to send the shell command
+					sckOut("");
+					sckIn(serialBuff);							// Process input
+					serialBuff = "";
+					prompt();
+					break;
+				}
+				case 8 : { /// case 8 \n backspace : delete last character
+					serialBuff = serialBuff.substring(0, serialBuff.length()-2);
+					break;
+				}
+				default : {
+					break;
+				}
 			}
+			sckOut((String)buff, PRIO_MED, false);
 		}
 	}
 }

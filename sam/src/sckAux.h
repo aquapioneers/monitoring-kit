@@ -131,6 +131,7 @@ class DS2482_100 {
 public:
 	byte data[8]; /*!< holding for onewire capture */
 	byte addr[8]; /*!<  1wire wire address and CRC */
+	uint8_t conf =0x05;
 	/**
 	 * start the transmission of data for the DS18B20 threw the DS2482_100
 	 * @return true
