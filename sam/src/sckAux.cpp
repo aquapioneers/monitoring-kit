@@ -341,8 +341,6 @@ bool DS2482_100::begin() {
 }
 
 float DS2482_100::getReading() {
-	return 10.0;
-	/*
 	//do search
 	//uint8_t search = ds.wireSearch(addr);
 	//debug
@@ -350,7 +348,7 @@ float DS2482_100::getReading() {
 	//SerialUSB.println(search);
 	//SerialUSB.print("!ds.wireSearch() : ");
 	//SerialUSB.println(!search);
-
+	float reading;
  while ( !ds.wireSearch(addr))
 	 {
 SerialUSB.print("No more addresses.\n");
@@ -381,7 +379,7 @@ SerialUSB.print("No more addresses.\n");
 
  if (ds.crc8(addr, 7) != addr[7]) {
 	SerialUSB.println("CRC is not valid!");
-	return 10;
+	return DS2482_100::getReading();
  }
 
 //test if device code DS18b20
@@ -427,6 +425,9 @@ if (SignBit) // If its negative
 	SerialUSB.print(Tc_100/10+1);
 	SerialUSB.print(".");
 	SerialUSB.println(Tc_100%10);
-	return (float) (Tc_100/10+1+Tc_100%10);
-}*/
+	//return (float) (Tc_100/10+1+Tc_100%10);
+	reading = (float)(Tc_100)/10+1;
+	//reading+= (Tc_100%10)/10;
+	return reading;
+}
 }
